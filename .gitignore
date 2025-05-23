@@ -1,9 +1,12 @@
+# Large files
+00_Data/02_Cosmic_Data/CosmicCodingMuts.vcf.gz
+00_Data/03_ClinVar_Data/03_clinvar_variant_summary.txt.gz
+
 # History files
 .Rhistory
 .Rapp.history
 
 # Session Data files
-.RData
 .RDataTmp
 
 # User-specific files

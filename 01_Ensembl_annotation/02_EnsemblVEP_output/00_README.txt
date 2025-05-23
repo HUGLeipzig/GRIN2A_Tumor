@@ -1,0 +1,1 @@
+The files with the name 76tawjFt9Dh0eKMY contain intronic variants, the other files have been subsetted to only include exonic variants
