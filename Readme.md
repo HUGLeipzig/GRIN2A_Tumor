@@ -222,11 +222,11 @@ variants 2. missense only 3. Null variants only
 plot_variant_density = function(input_df, label_prefix = ""){
   g = ggplot(input_df, aes(x = Protein_position2)) + 
   geom_density(data = (input_df %>% select(Protein_position2, gnomAD) %>% filter(!is.na(gnomAD))), 
-               aes(y = -after_stat(density), fill = "gnomAD"), alpha = 0.5) + 
+               aes(y = -after_stat(density), fill = "gnomAD (controls)"), alpha = 0.5) + 
   geom_density(data = (input_df %>% select(Protein_position2, ClinVar) %>% filter(!is.na(ClinVar))), 
-               aes(fill = "ClinVar"), alpha = 0.5) + 
+               aes(fill = "ClinVar (germline)"), alpha = 0.5) + 
   geom_density(data = (input_df %>% select(Protein_position2, Cosmic) %>% filter(!is.na(Cosmic))), 
-               aes(fill = "Cosmic"), alpha = 0.5) + 
+               aes(fill = "Cosmic (somatic)"), alpha = 0.5) + 
   geom_segment(data = domains, 
                aes(x = Start, xend = End, color = Domain), 
                y = 0, yend = 0, 
@@ -237,9 +237,9 @@ plot_variant_density = function(input_df, label_prefix = ""){
   labs(fill = "Dataset", y = paste(label_prefix, "Variants (Density)"), x = "Amino Acid Position") +
   scale_fill_manual(values = c("indianred4", "lightblue3", "darkslategrey")) + 
   scale_color_viridis_d(option = "E", end = 0.9) +
-  guides(fill = guide_legend(override.aes = list(alpha = 0.25))) + 
+  guides(fill = guide_legend(override.aes = list(alpha = 0.5))) + 
   theme_minimal() + 
-  theme(plot.background = element_rect(fill = "white"), 
+  theme(plot.background = element_rect(fill = "white", colour = "white"), 
         axis.title = element_text(size = 14, face = "bold"),
         axis.text = element_text(size = 12),
         legend.title = element_text(size = 14, face = "bold"), 
@@ -257,9 +257,17 @@ Variants_VEP_tidy_null = Variants_VEP_tidy %>%
   filter(Null_variant == T)
 
 ### plot data ###
-g_density = plot_variant_density(Variants_VEP_tidy)
+g_density = plot_variant_density(Variants_VEP_tidy, label_prefix = "All")
 g_density_missense = plot_variant_density(Variants_VEP_tidy_missense, label_prefix = "Missense")
 g_density_null = plot_variant_density(Variants_VEP_tidy_null, label_prefix = "Null")
+
+### combined density plot ###
+g_density_combi = plot_grid(g_density, 
+                  g_density_missense, 
+                  g_density_null, 
+                  labels = "AUTO", 
+                  nrow = 3, 
+                  ncol = 1)
 ```
 
 Now lets have a look at the plots:
@@ -276,18 +284,23 @@ Now lets have a look at the plots:
 
 ![](Readme_files/figure-gfm/Print%20null%20variants-1.png)<!-- -->
 
+#### Combined plot
+
+![](Readme_files/figure-gfm/Print%20combined%20density-1.png)<!-- -->
+
 ### Venn diagramm
 
 With a Venn diagramm we can visualise which variants are present in
 which dataset
 
 ``` r
-x = list(gnomAD = (Variants_VEP_tidy %>% filter(!is.na(gnomAD)))$ID, 
-         Cosmic = (Variants_VEP_tidy %>% filter(!is.na(Cosmic)))$ID, 
-         ClinVar = (Variants_VEP_tidy %>% filter(!is.na(ClinVar)))$ID)
+x = list("gnomAD\n(controls)" = (Variants_VEP_tidy %>% filter(!is.na(gnomAD)))$ID, 
+         "Cosmic\n(somatic)" = (Variants_VEP_tidy %>% filter(!is.na(Cosmic)))$ID, 
+         "ClinVar\n(germline)" = (Variants_VEP_tidy %>% filter(!is.na(ClinVar)))$ID)
 
 v = ggvenn(x, fill_color = c("darkslategrey", "lightblue3", "indianred4")) + 
-  theme(plot.background = element_rect(fill = "white"))
+  theme(plot.background = element_rect(fill = "white", colour = "white")) + 
+  expand_limits(y = c(-2.5,2.5))
 ```
 
 ![](Readme_files/figure-gfm/Print%20Venn%20diagramm-1.png)<!-- -->
@@ -340,7 +353,10 @@ g_domain = ggplot(Variants_VEP_tidy_domains_melted, aes(fill = Consequence, x = 
   geom_bar(position = "fill") + 
   facet_grid(cols = vars(Dataset), 
              rows = vars(Domain), 
-             switch = "y") + 
+             switch = "y", 
+             labeller = labeller(Dataset = c('ClinVar' = "ClinVar\n(germline)", 
+                                             'Cosmic' = "Cosmic\n(somatic)", 
+                                             'gnomAD' = "gnomAD\n(controls)"))) + 
   coord_polar(theta = "y") + 
   theme_minimal() + 
   scale_y_continuous(labels = NULL, breaks = NULL, position = "bottom") +
@@ -348,7 +364,7 @@ g_domain = ggplot(Variants_VEP_tidy_domains_melted, aes(fill = Consequence, x = 
   scale_fill_viridis_d() + 
   theme(strip.text = element_text(size = 12), 
         panel.grid = element_blank(), 
-        plot.background = element_rect(fill = "white"), 
+        plot.background = element_rect(fill = "white", colour = "white"), 
         axis.title = element_text(size = 14, face = "bold"),
         axis.text = element_text(size = 12),
         legend.title = element_text(size = 14, face = "bold"), 
