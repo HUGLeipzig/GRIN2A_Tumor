@@ -53,6 +53,7 @@ library(ggplot2)
 library(ggvenn)
 library(cowplot)
 library(tibble)
+library(scales)
 ```
 
 ## Read and prepare cosmic, gnomAD and clinVar
@@ -237,6 +238,7 @@ plot_variant_density = function(input_df, label_prefix = ""){
   labs(fill = "Dataset", y = paste(label_prefix, "Variants (Density)"), x = "Amino Acid Position") +
   scale_fill_manual(values = c("indianred4", "lightblue3", "darkslategrey")) + 
   scale_color_viridis_d(option = "E", end = 0.9) +
+  scale_y_continuous(labels = scales::label_number(style_negative = "minus")) + 
   guides(fill = guide_legend(override.aes = list(alpha = 0.5))) + 
   theme_minimal() + 
   theme(plot.background = element_rect(fill = "white", colour = "white"), 
